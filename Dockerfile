@@ -1,21 +1,36 @@
 
+
+
+
 FROM composer:2.0 as composer
 
-WORKDIR /app
+RUN rm -rf /var/www/ && mkdir /var/wwww
+WORKDIR /var/www
 
-COPY ./composer.* /app/
+COPY composer.* /var/www/
 
 RUN composer install
 
-COPY . /app
-
-FROM php:7.4
-
-WORKDIR /app
-
-COPY --from=composer /app .
 
 
-EXPOSE 1997
+FROM php:7.4-fpm as base
 
-CMD php -S localhost:1997 -t public/
+WORKDIR /var/www
+
+ARG APP_ENV=prod
+ARG APP_DEBUG=0
+
+COPY . .
+
+ENV APP_ENV $APP_ENV
+ENV APP_DEBUG $APP_DEBUG
+
+COPY --from=composer /var/www/ .
+
+CMD [ "php-fpm" ]
+
+FROM nginx
+
+COPY --from=base  /var/www/ /var/www/html
+
+COPY docker/nginx/default.conf /etc/nginx/conf.d

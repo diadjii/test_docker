@@ -1,0 +1,15 @@
+version: "3.7"
+
+services:
+    base:
+        build: .
+        networks:
+            - symfony
+    nginx:
+        build: .
+        ports:
+            - 8080:80
+        networks:
+            - symfony
+networks: 
+    symfony:
